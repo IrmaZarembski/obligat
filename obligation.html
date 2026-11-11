@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modal Verbs Quiz</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1000px;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            font-size: 48px; 
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .quiz-panel {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            padding: 60px; 
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+        }
+
+        .progress-counter {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 28px; 
+            color: #7f8c8d;
+            font-weight: bold;
+        }
+
+        .question-text {
+            font-size: 32px; 
+            color: #2c3e50;
+            margin-bottom: 40px;
+            line-height: 1.4;
+            text-align: center; 
+            margin-top: 20px;
+        }
+
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .option-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 25px 30px;
+            font-size: 28px; 
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #2980b9;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-btn.correct {
+            background: #27ae60 !important;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.4);
+        }
+
+        .option-btn.incorrect {
+            background: #e74c3c !important;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.4);
+        }
+
+        .feedback-area {
+            margin-top: 30px;
+            text-align: center;
+            font-size: 28px; 
+            font-weight: bold;
+            min-height: 40px;
+        }
+
+        .feedback-area.correct { color: #27ae60; }
+        .feedback-area.incorrect { color: #e74c3c; }
+
+        .next-btn {
+            background: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 20px 50px;
+            font-size: 32px; 
+            cursor: pointer;
+            margin: 30px auto 0;
+            display: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .next-btn:hover {
+            background: #e67e22;
+            transform: translateY(-3px);
+        }
+
+        .next-btn.show { display: block; }
+
+        /* Final screen styles */
+        .final-screen {
+            text-align: center;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .final-screen h2 {
+            font-size: 48px;
+            color: #2c3e50;
+            margin-bottom: 40px;
+        }
+
+        .final-stats {
+            font-size: 40px; 
+            font-weight: bold;
+            margin: 15px 0;
+        }
+
+        .stat-correct { color: #27ae60; }
+        .stat-incorrect { color: #e74c3c; }
+
+        .restart-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 25px 60px;
+            font-size: 32px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 40px;
+        }
+
+        .restart-btn:hover {
+            background: #8e44ad;
+            transform: translateY(-3px);
+        }
+
+        .quiz-content {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h1>Modal Verbs Quiz</h1>
+    
+    <div class="quiz-panel">
+        <div class="quiz-content" id="quizContent">
+            <div class="progress-counter" id="progressCounter">Question 1 / 30</div>
+            
+            <div class="question-text" id="questionText">Loading question...</div>
+            
+            <div class="options-container" id="optionsContainer">
+                <!-- Options will be injected here -->
+            </div>
+
+            <div class="feedback-area" id="feedbackArea"></div>
+            
+            <button class="next-btn" id="nextBtn" onclick="nextQuestion()">OK / Next</button>
+        </div>
+
+        <div class="final-screen" id="finalScreen">
+            <h2>Quiz Completed!</h2>
+            <p class="final-stats stat-correct" id="finalCorrect">Correct: 0</p>
+            <p class="final-stats stat-incorrect" id="finalIncorrect">Incorrect: 0</p>
+            <button class="restart-btn" onclick="restartQuiz()">Start Again</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        { q: "You _____ stop at the red light. It is the law.", options: ["should", "must", "had better"], answer: 1 },
+        { q: "You look very tired. You _____ go to bed early tonight.", options: ["have to", "should", "had better not"], answer: 1 },
+        { q: "I _____ get up at 6:00 AM tomorrow for my flight. I hate early mornings.", options: ["should", "ought to", "have to"], answer: 2 },
+        { q: "You _____ hurry up, or we will miss the train!", options: ["need to", "had better", "ought to"], answer: 1 },
+        { q: "We _____ buy some milk. The fridge is completely empty.", options: ["must", "need to", "had better"], answer: 1 },
+        { q: "You _____ call an ambulance immediately! He is not breathing.", options: ["should", "have to", "must"], answer: 2 },
+        { q: "You _____ help your parents when they are old. It is your moral duty.", options: ["have to", "ought to", "had better"], answer: 1 },
+        { q: "You _____ smoke in the hospital. It is strictly forbidden.", options: ["don't have to", "must not", "shouldn't"], answer: 1 },
+        { q: "It is Sunday tomorrow, so I _____ go to work.", options: ["must not", "don't have to", "shouldn't"], answer: 1 },
+        { q: "You _____ be late for the interview. The boss hates lateness.", options: ["had better not", "don't have to", "need not"], answer: 0 },
+        { q: "Passengers _____ fasten their seatbelts during takeoff.", options: ["should", "must", "need to"], answer: 1 },
+        { q: "You _____ try this cake. It is delicious! (Strong recommendation)", options: ["must", "have to", "had better"], answer: 0 },
+        { q: "I _____ wear a uniform at my school. I don't like it, but it's the rule.", options: ["should", "have to", "ought to"], answer: 1 },
+        { q: "You _____ water the flowers. They are dry.", options: ["had better", "need to", "must"], answer: 1 },
+        { q: "_____ I call him? (Note: Ought to cannot be used here)", options: ["Ought", "Should", "Had better"], answer: 1 },
+        { q: "You _____ study hard, or you will fail the exam.", options: ["should", "had better", "need to"], answer: 1 },
+        { q: "You _____ drive so fast! It is dangerous for your life.", options: ["shouldn't", "must not", "don't have to"], answer: 1 },
+        { q: "We _____ leave now to avoid the traffic jam. It's a good idea.", options: ["have to", "should", "had better"], answer: 1 },
+        { q: "You _____ pay for the ticket. It is free entry today.", options: ["must not", "don't have to", "shouldn't"], answer: 1 },
+        { q: "He _____ apologize for his behavior. He was very rude.", options: ["has to", "ought to", "had better"], answer: 1 },
+        { q: "You _____ take an umbrella. It looks like rain.", options: ["had better", "should", "must"], answer: 1 },
+        { q: "I _____ call my mom. It is her birthday.", options: ["have to", "need to", "must"], answer: 1 },
+        { q: "You _____ eat more vegetables. It is good for your health.", options: ["should", "had better", "have to"], answer: 0 },
+        { q: "You _____ lie to me again! (Implies a threat/bad consequence)", options: ["shouldn't", "had better not", "don't have to"], answer: 1 },
+        { q: "All employees _____ attend the meeting. It is mandatory.", options: ["should", "have to", "ought to"], answer: 1 },
+        { q: "You _____ see that new movie. It is amazing!", options: ["have to", "must", "need to"], answer: 1 },
+        { q: "We _____ recycle plastic bottles. It helps the environment.", options: ["have to", "should", "had better"], answer: 1 },
+        { q: "You _____ touch the stove. It is hot and you will get burned.", options: ["must not", "don't have to", "shouldn't"], answer: 0 },
+        { q: "I _____ finish this report by 5 PM. My boss is waiting.", options: ["should", "have to", "ought to"], answer: 1 },
+        { q: "You _____ lock the door. There are thieves in the area.", options: ["need to", "had better", "must"], answer: 1 }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+
+    function loadQuestion() {
+        const q = questions[currentQuestion];
+        document.getElementById('questionText').innerText = q.q;
+        document.getElementById('progressCounter').innerText = `Question ${currentQuestion + 1} / ${questions.length}`;
+        document.getElementById('feedbackArea').innerText = '';
+        document.getElementById('feedbackArea').className = 'feedback-area';
+        document.getElementById('nextBtn').classList.remove('show');
+
+        const optionsContainer = document.getElementById('optionsContainer');
+        optionsContainer.innerHTML = '';
+
+        q.options.forEach((option, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = option;
+            btn.onclick = () => checkAnswer(index, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selectedIndex, btnElement) {
+        const q = questions[currentQuestion];
+        const buttons = document.querySelectorAll('.option-btn');
+        
+        buttons.forEach(btn => btn.disabled = true);
+
+        const feedbackArea = document.getElementById('feedbackArea');
+
+        if (selectedIndex === q.answer) {
+            btnElement.classList.add('correct');
+            feedbackArea.innerText = 'Correct! Great job!';
+            feedbackArea.classList.add('correct');
+            score++;
+        } else {
+            btnElement.classList.add('incorrect');
+            buttons[q.answer].classList.add('correct');
+            feedbackArea.innerText = `Incorrect. The correct answer is: ${q.options[q.answer]}`;
+            feedbackArea.classList.add('incorrect');
+        }
+
+        document.getElementById('nextBtn').classList.add('show');
+    }
+
+    function nextQuestion() {
+        currentQuestion++;
+        if (currentQuestion < questions.length) {
+            loadQuestion();
+        } else {
+            showFinalScreen();
+        }
+    }
+
+    function showFinalScreen() {
+        document.getElementById('quizContent').style.display = 'none';
+        document.getElementById('finalScreen').style.display = 'flex';
+        
+        let correctAnswers = score;
+        let incorrectAnswers = questions.length - score;
+        
+        document.getElementById('finalCorrect').innerText = `✔ Correct answers: ${correctAnswers}`;
+        document.getElementById('finalIncorrect').innerText = `✘ Incorrect answers: ${incorrectAnswers}`;
+    }
+
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('quizContent').style.display = 'flex';
+        document.getElementById('finalScreen').style.display = 'none';
+        loadQuestion();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+</html>
